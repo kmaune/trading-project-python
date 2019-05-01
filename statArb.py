@@ -17,15 +17,16 @@ def statArb():
 
 	##Setting initial risk free rate to 3% for testing
 	riskFree = 0.03
+	daily_riskFree = math.log(1+riskFree)/365
 
 	dailyReturns = get_daily_returns(prices)
-	adjustedReturns = dailyReturns - riskFree
+	adjustedReturns = dailyReturns - daily_riskFree
 
 	##Treating R_{i,t} and R{j,t} the same for now for Γ matrix from paper
 	denom = adjustedReturns*adjustedReturns
 
 	## γ matrix from paper
-	gamma = adjustedReturns*riskFree
+	gamma = adjustedReturns*daily_riskFree
 
 	plt.close()
 	plt.figure(1)
@@ -44,14 +45,19 @@ def statArb():
 
 	ll_best_params = {}
 
+	#print(adjustedReturns)
+	#print(gamma)
+	#print(denom)
+
 	## mean return from 0% - 200% w/ 5% increments
 	for alpha_0 in np.arange(0, 2.0, 0.05):
 		Beta = ( (alpha_0*adjustedReturns) - gamma)/denom
-
 		temp = Beta*adjustedReturns
-		temp = temp + riskFree - alpha_0;
+		temp = temp + daily_riskFree - alpha_0;
 		temp = temp.sum(axis=1)
 		temp=temp**2
+
+		#print(Beta)
 
 		variance = temp.sum(axis=0)/temp.shape[0]
 		std_dev = variance**(1/2)
@@ -59,7 +65,7 @@ def statArb():
 		plt.figure(1)
 		plt.plot(alpha_0, std_dev, '-ro')
 
-		log_likelihood = get_log_likelihood(alpha_0, variance, Beta, dailyReturns, riskFree)
+		log_likelihood = get_log_likelihood(alpha_0, variance, Beta, dailyReturns,daily_riskFree)
 		plt.figure(2)
 		plt.plot(alpha_0, log_likelihood, '-bo')
 
@@ -72,7 +78,6 @@ def statArb():
 
 
 	plt.show()
-
 
 
 
