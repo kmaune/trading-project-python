@@ -10,10 +10,11 @@ import matplotlib.pyplot as plt
 from scipy import optimize	
 
 def run_test():
-	#asset = eq.Equity(symbol='AAPL')
-	#data = asset.get_daily()
-	#print(data)
+	asset = eq.Equity(symbol='GOOG')
+	data = asset.get_daily(size='full')
+	print(data)
 
+	"""
 	port = pf.Portfolio()
 	prices = port.get_data()
 	print(prices)
@@ -40,7 +41,14 @@ def run_test():
 	xi = [i for i in range(0, len(port.symbols))]
 	plt.xticks(xi, port.symbols)
 	plt.show()
-
+	"""
+	"""
+	port = pf.Portfolio()
+	prices = port.get_data()
+	print(prices)
+	print(prices.index)
+	print(prices.loc['2019-01-02':'2019-01-07', :])
+	"""
 	
 
 if __name__ == "__main__":
