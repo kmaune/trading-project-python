@@ -64,6 +64,12 @@ class Portfolio(object):
 		else:
 			pass
 			##Raise error
+		
+	def get_volume(symbol):
+		asset = eq.Equity(symbol=symbol)
+		data = asset.get_daily()
+		return data['volume']
+
 
 	def optimizeSharpe(self, weights, prices):
 		normalized_prices = prices/prices.iloc[0, :]

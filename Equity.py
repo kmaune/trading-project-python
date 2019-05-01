@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import datetime as dt
 from alpha_vantage.timeseries import TimeSeries
+from alpha_vantage.techindicators import TechIndicators
 
 class Equity(object):
 
@@ -9,7 +10,8 @@ class Equity(object):
 		self.symbol = symbol
 		self.apiKey = apiKey
 		self.ts = TimeSeries(key=self.apiKey, output_format='pandas', indexing_type='date')
-		
+		self.ti = TechIndicators(key=self.apiKey, output_format='pandas')
+
 	def get_intraday(self, time_interval='15min', size='compact'):
 		data, meta_data = self.ts.get_intraday(self.symbol, time_interval, size)
 		data.columns = ['open', 'high', 'low', 'close', 'volume']
@@ -49,3 +51,4 @@ class Equity(object):
 		self.data, meta_data = self.ts.get_monthly_adjusted(self.symbol)
 		self.data.columns = ['open', 'high', 'low', 'close', 'adjusted close', 'volume', 'dividend amount']
 		return self.data
+
