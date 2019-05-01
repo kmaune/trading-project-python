@@ -71,26 +71,4 @@ class Portfolio(object):
 		return data['volume']
 
 
-	def optimizeSharpe(self, weights, prices):
-		normalized_prices = prices/prices.iloc[0, :]
-		asset_values = normalized_prices * weights
-		portfolio_value = asset_values.sum(axis=1)
-		daily_returns = np.diff(portfolio_value) / portfolio_value[0:len(portfolio_value) - 1]
-		avg_dr = daily_returns.mean()
-		portfolio_return = avg_dr*np.sqrt(252.0);
-		sharpeRatio = portfolio_return / daily_returns.std()
-		return -sharpeRatio
 
-
-
-"""
-	#Set initial weights, bounds and constraints
-	weights = np.ones((1, len(syms)))/len(syms)
-	bounds = [(0.0, 1.0)] * len(syms)
-    constraints = ({ 'type': 'eq', 'fun': lambda x: np.sum(x) - 1 })
-
-    #Get prices
-
-	min_optimizer = optimize.minimize(optimizeSharpe, allocs, method='SLSQP', bounds=bounds, constraints=constraints)
-    allocs = np.asarray(min_optimizer.x)
- """	

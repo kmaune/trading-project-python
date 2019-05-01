@@ -16,41 +16,60 @@ def statArb():
 	prices = portfolio.get_data(size='full')
 
 	##Setting initial risk free rate to 3% for testing
-	risk_free = 0.03
+	riskFree = 0.03
 
 	dailyReturns = get_daily_returns(prices)
-	adjustedReturns = dailyReturns - risk_free
+	adjustedReturns = dailyReturns - riskFree
 
 	##Treating R_{i,t} and R{j,t} the same for now for Γ matrix from paper
 	denom = adjustedReturns*adjustedReturns
 
 	## γ matrix from paper
-	gamma = adjustedReturns*risk_free
+	gamma = adjustedReturns*riskFree
 
 	plt.close()
-	plt.figure()
-	plt.title('Arbitrage Frontier')
-	plt.xlabel('alpha_0 value')
-	plt.ylabel('Phi Value (Std. Deviation)')
+	plt.figure(1)
+	plt.title('Risk vs Return w/ optimal weights')
+	plt.xlabel('alpha_0')
+	plt.ylabel('Std. Deviation')
+	plt.figure(2)
+	plt.title('Return vs Log Likelihood')
+	plt.xlabel('alpha_0')
+	plt.ylabel(' Negative Log Likelihood')
+
 
 	##Temporary Optimal Weights and initial variance
 	optimalWeights = -gamma/denom;
-	variance = 0.0
-	all_variances = []
+	best_ll = -1.0
+
+	ll_best_params = {}
 
 	## mean return from 0% - 200% w/ 5% increments
 	for alpha_0 in np.arange(0, 2.0, 0.05):
 		Beta = ( (alpha_0*adjustedReturns) - gamma)/denom
 
 		temp = Beta*adjustedReturns
-		temp = temp + risk_free - alpha_0;
+		temp = temp + riskFree - alpha_0;
 		temp = temp.sum(axis=1)
 		temp=temp**2
 
 		variance = temp.sum(axis=0)/temp.shape[0]
 		std_dev = variance**(1/2)
 
+		plt.figure(1)
 		plt.plot(alpha_0, std_dev, '-ro')
+
+		log_likelihood = get_log_likelihood(alpha_0, variance, Beta, dailyReturns, riskFree)
+		plt.figure(2)
+		plt.plot(alpha_0, log_likelihood, '-bo')
+
+		if best_ll < log_likelihood:
+			ll_best_params = {}
+			ll_best_params['ll'] = log_likelihood
+			ll_best_params['alpha'] = alpha_0
+			ll_best_params['variance'] = variance
+
+
 
 	plt.show()
 
