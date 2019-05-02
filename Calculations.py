@@ -13,14 +13,14 @@ def get_sma(prices, window=15):
 def get_daily_returns(prices):
 	return prices / prices.shift(1) - 1
 
-def get_log_likelihood(alpha, variance, weights, dailyReturns, riskFree):
+def get_log_likelihood(alpha, variance, weights, dailyReturns, daily_riskFree):
 	#print(weights)
-	adjustedReturns = dailyReturns - riskFree
+	adjustedReturns = dailyReturns - daily_riskFree
 	days = dailyReturns.shape[0]
 	std_dev = variance**(1/2)
 
 	temp = weights*adjustedReturns
-	temp = temp + riskFree
+	temp = temp + daily_riskFree
 	totalDailyReturns = temp.sum(axis=1)
 	totalDailyReturns = totalDailyReturns - alpha
 	totalDailyReturns = totalDailyReturns**2
