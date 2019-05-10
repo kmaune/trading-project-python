@@ -49,9 +49,12 @@ def statArb():
 	#print(gamma)
 	#print(denom)
 
-	## mean return from 0% - 200% w/ 5% increments
-	for alpha_0 in np.arange(0, 2.0, 0.05):
+	## mean return from 0% - 3% for daily w/ .1% increments
+	for alpha_0 in np.arange(0, 0.3, 0.001):
 		Beta = ( (alpha_0*adjustedReturns) - gamma)/denom
+
+		print(Beta)
+
 		temp = Beta*adjustedReturns
 		temp = temp + daily_riskFree - alpha_0;
 		temp = temp.sum(axis=1)
