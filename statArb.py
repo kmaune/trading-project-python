@@ -22,11 +22,23 @@ def statArb():
 	dailyReturns = get_daily_returns(prices)
 	adjustedReturns = dailyReturns - daily_riskFree
 
+	averageReturns = adjustedReturns.mean()
+
 	##Treating R_{i,t} and R{j,t} the same for now for Γ matrix from paper
-	denom = adjustedReturns*adjustedReturns
+	helper = adjustedReturns*adjustedReturns
+	averageHelper = helper.mean()
+	averageHelper_transposed = averageHelper.values
+
+	Gamma = pd.DataFrame(1, index=averageHelper.index, columns=adjustedReturns.columns)
+	Gamma = Gamma*averageHelper
+	Gamma_transpose = Gamma.transpose()
+	Gamma = Gamma*Gamma_transpose
+	Gamma_inv = pd.DataFrame(np.linalg.pinv(Gamma.values), Gamma.columns, Gamma.index)
+
 
 	## γ matrix from paper
 	gamma = adjustedReturns*daily_riskFree
+	average_gamma = gamma.mean()
 
 	plt.close()
 	plt.figure(1)
@@ -40,27 +52,21 @@ def statArb():
 
 
 	##Temporary Optimal Weights and initial variance
-	optimalWeights = -gamma/denom;
+	optimalWeights = -average_gamma/Gamma;
 	best_ll = -1.0
 
 	ll_best_params = {}
 
-	#print(adjustedReturns)
-	#print(gamma)
-	#print(denom)
-
 	## mean return from 0% - 3% for daily w/ .1% increments
 	for alpha_0 in np.arange(0, 0.3, 0.001):
-		Beta = ( (alpha_0*adjustedReturns) - gamma)/denom
 
-		print(Beta)
+		Beta = ((alpha_0*averageReturns) - average_gamma)
+		Beta = Beta.dot(Gamma_inv)
 
-		temp = Beta*adjustedReturns
+		temp = Beta.values*adjustedReturns
 		temp = temp + daily_riskFree - alpha_0;
 		temp = temp.sum(axis=1)
 		temp=temp**2
-
-		#print(Beta)
 
 		variance = temp.sum(axis=0)/temp.shape[0]
 		std_dev = variance**(1/2)
