@@ -9,8 +9,6 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from scipy import optimize	
 
-##difference between R_{i,t} and R_{j,t} ???
-
 def statArb():
 	portfolio = pf.Portfolio(['GOOG','AAPL','GLD','XOM'])
 	prices = portfolio.get_data(size='full')
@@ -22,46 +20,51 @@ def statArb():
 	dailyReturns = get_daily_returns(prices)
 	adjustedReturns = dailyReturns - daily_riskFree
 
-	averageReturns = adjustedReturns.mean()
+	#averageReturns = adjustedReturns.mean()
 
-	##Treating R_{i,t} and R{j,t} the same for now for Γ matrix from paper
-	helper = adjustedReturns*adjustedReturns
-	averageHelper = helper.mean()
-	averageHelper_transposed = averageHelper.values
+	beta_df = pd.DataFrame(index=adjustedReturns.index, columns=adjustedReturns.columns)
 
-	Gamma = pd.DataFrame(1, index=averageHelper.index, columns=adjustedReturns.columns)
-	Gamma = Gamma*averageHelper
-	Gamma_transpose = Gamma.transpose()
-	Gamma = Gamma*Gamma_transpose
-	Gamma_inv = pd.DataFrame(np.linalg.pinv(Gamma.values), Gamma.columns, Gamma.index)
+	for i in range(320, len(adjustedReturns)):
+		subset_adjustedReturns = adjustedReturns.iloc[i-319:i, :]
+		averageReturns = subset_adjustedReturns.mean()
 
+		##Treating R_{i,t} and R{j,t} the same for now for Γ matrix from paper
+		helper = adjustedReturns*adjustedReturns
+		averageHelper = helper.mean()
+		averageHelper_transposed = averageHelper.values
 
-	## γ matrix from paper
-	gamma = adjustedReturns*daily_riskFree
-	average_gamma = gamma.mean()
-
-	plt.close()
-	plt.figure(1)
-	plt.title('Risk vs Return w/ optimal weights')
-	plt.xlabel('alpha_0')
-	plt.ylabel('Std. Deviation')
-	plt.figure(2)
-	plt.title('Return vs Log Likelihood')
-	plt.xlabel('alpha_0')
-	plt.ylabel(' Negative Log Likelihood')
+		Gamma = pd.DataFrame(1, index=averageHelper.index, columns=adjustedReturns.columns)
+		Gamma = Gamma*averageHelper
+		Gamma_transpose = Gamma.transpose()
+		Gamma = Gamma*Gamma_transpose
+		Gamma_inv = pd.DataFrame(np.linalg.pinv(Gamma.values), Gamma.columns, Gamma.index)
 
 
-	##Temporary Optimal Weights and initial variance
-	optimalWeights = -average_gamma/Gamma;
-	best_ll = -1.0
+		## γ matrix from paper
+		gamma = adjustedReturns*daily_riskFree
+		average_gamma = gamma.mean()
 
-	ll_best_params = {}
+		plt.close()
+		plt.figure(1)
+		plt.title('Risk vs Return w/ optimal weights')
+		plt.xlabel('alpha_0')
+		plt.ylabel('Std. Deviation')
+		plt.figure(2)
+		plt.title('Return vs Log Likelihood')
+		plt.xlabel('alpha_0')
+		plt.ylabel(' Negative Log Likelihood')
 
-	## mean return from 0% - 3% for daily w/ .1% increments
-	for alpha_0 in np.arange(0, 0.3, 0.001):
 
+		##Temporary Optimal Weights and initial variance
+		optimalWeights = -average_gamma/Gamma;
+		best_ll = -1.0
+
+		ll_best_params = {}
+
+		alpha_0 = 0.005
 		Beta = ((alpha_0*averageReturns) - average_gamma)
 		Beta = Beta.dot(Gamma_inv)
+		beta_df.iloc[i] = Beta
 
 		temp = Beta.values*adjustedReturns
 		temp = temp + daily_riskFree - alpha_0;
@@ -85,8 +88,8 @@ def statArb():
 			ll_best_params['variance'] = variance
 
 
-
-	plt.show()
+	beta_df.dropna(axis=0, inplace=True)
+	#plt.show()
 
 
 
