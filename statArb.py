@@ -61,34 +61,37 @@ def statArb():
 
 		ll_best_params = {}
 
-		alpha_0 = 0.005
-		Beta = ((alpha_0*averageReturns) - average_gamma)
-		Beta = Beta.dot(Gamma_inv)
-		beta_df.iloc[i] = Beta
+		#alpha_0 = 0.005
+		## mean return from 0% - 3% for daily w/ .1% increments
+		for alpha_0 in np.arange(0, 0.03, 0.001):
+			Beta = ((alpha_0*averageReturns) - average_gamma)
+			Beta = Beta.dot(Gamma_inv)
 
-		temp = Beta.values*adjustedReturns
-		temp = temp + daily_riskFree - alpha_0;
-		temp = temp.sum(axis=1)
-		temp=temp**2
+			temp = Beta.values*adjustedReturns
+			temp = temp + daily_riskFree - alpha_0;
+			temp = temp.sum(axis=1)
+			temp=temp**2
 
-		variance = temp.sum(axis=0)/temp.shape[0]
-		std_dev = variance**(1/2)
+			variance = temp.sum(axis=0)/temp.shape[0]
+			std_dev = variance**(1/2)
 
-		plt.figure(1)
-		plt.plot(alpha_0, std_dev, '-ro')
+			plt.figure(1)
+			plt.plot(alpha_0, std_dev, '-ro')
 
-		log_likelihood = get_log_likelihood(alpha_0, variance, Beta, dailyReturns,daily_riskFree)
-		plt.figure(2)
-		plt.plot(alpha_0, log_likelihood, '-bo')
+			log_likelihood = get_log_likelihood(alpha_0, variance, Beta, dailyReturns,daily_riskFree)
+			plt.figure(2)
+			plt.plot(alpha_0, log_likelihood, '-bo')
 
-		if best_ll < log_likelihood:
-			ll_best_params = {}
-			ll_best_params['ll'] = log_likelihood
-			ll_best_params['alpha'] = alpha_0
-			ll_best_params['variance'] = variance
+			if best_ll < log_likelihood:
+				beta_df.iloc[i] = Beta
+				ll_best_params = {}
+				ll_best_params['ll'] = log_likelihood
+				ll_best_params['alpha'] = alpha_0
+				ll_best_params['variance'] = variance
 
 
 	beta_df.dropna(axis=0, inplace=True)
+	print(beta_df)
 	#plt.show()
 
 
